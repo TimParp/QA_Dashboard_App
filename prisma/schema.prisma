@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  QA
+  DEVELOPER
+  CLIENT
+}
+
+enum IssueType {
+  BUG
+  FEATURE
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  projects  Project[]
+  users     User[]
+}
+
+model User {
+  id           String              @id @default(cuid())
+  email        String              @unique
+  name         String?
+  passwordHash String?
+  role         Role
+  clientId     String?
+  client       Client?             @relation(fields: [clientId], references: [id])
+  memberships  ProjectMembership[]
+  createdAt    DateTime            @default(now())
+
+  createdIssues   Issue[]        @relation("IssueCreatedBy")
+  assignedIssues  Issue[]        @relation("IssueAssignedTo")
+  comments        Comment[]
+  uploads         Attachment[]
+  activity        ActivityLog[]
+  notifications   Notification[]
+}
+
+model Project {
+  id        String              @id @default(cuid())
+  name      String
+  clientId  String
+  client    Client              @relation(fields: [clientId], references: [id])
+  members   ProjectMembership[]
+  issues    Issue[]
+  createdAt DateTime            @default(now())
+}
+
+model ProjectMembership {
+  id        String  @id @default(cuid())
+  userId    String
+  projectId String
+  user      User    @relation(fields: [userId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model Issue {
+  id                String        @id @default(cuid())
+  title             String
+  description       String
+  type              IssueType
+  status            IssueStatus   @default(OPEN)
+  priority          IssuePriority @default(MEDIUM)
+  projectId         String
+  project           Project       @relation(fields: [projectId], references: [id])
+  createdById       String
+  createdBy         User          @relation("IssueCreatedBy", fields: [createdById], references: [id])
+  assignedToId      String?
+  assignedTo        User?         @relation("IssueAssignedTo", fields: [assignedToId], references: [id])
+  stepsToReproduce  String?
+  expectedResult    String?
+  actualResult      String?
+  environment       String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  attachments Attachment[]
+  comments    Comment[]
+  activity    ActivityLog[]
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  issueId      String
+  issue        Issue    @relation(fields: [issueId], references: [id])
+  s3Key        String
+  fileName     String
+  size         Int
+  contentType  String
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id])
+  action    String
+  fromValue String?
+  toValue   String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id])
+  message     String
+  issueId     String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Invite {
+  id        String   @id @default(cuid())
+  email     String
+  role      Role
+  clientId  String?
+  token     String   @unique
+  expiresAt DateTime
+  acceptedAt DateTime?
+  createdAt DateTime @default(now())
+}
