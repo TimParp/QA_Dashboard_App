@@ -68,4 +68,10 @@ describe("authorize", () => {
   it("returns false for a non-admin action with no project", () => {
     expect(authorize(qa, "createIssue", null)).toBe(false);
   });
+
+  it("denies QA/dev on a non-member project even when clientId coincides", () => {
+    const qaWithClient: AuthUser = { id: "u-qa2", role: "QA", clientId: "c1", projectIds: [] };
+    expect(canViewProject(qaWithClient, projectA)).toBe(false);
+    expect(authorize(qaWithClient, "viewProject", projectA)).toBe(false);
+  });
 });
