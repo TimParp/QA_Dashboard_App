@@ -68,6 +68,8 @@ model Project {
   members   ProjectMembership[]
   issues    Issue[]
   createdAt DateTime            @default(now())
+
+  @@index([clientId])
 }
 
 model ProjectMembership {
@@ -78,6 +80,8 @@ model ProjectMembership {
   project   Project @relation(fields: [projectId], references: [id])
 
   @@unique([userId, projectId])
+  @@index([userId])
+  @@index([projectId])
 }
 
 model Issue {
@@ -103,6 +107,11 @@ model Issue {
   attachments Attachment[]
   comments    Comment[]
   activity    ActivityLog[]
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([status])
 }
 
 model Attachment {
@@ -116,6 +125,8 @@ model Attachment {
   uploadedById String
   uploadedBy   User     @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now())
+
+  @@index([issueId])
 }
 
 model Comment {
@@ -126,6 +137,8 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id])
   body      String
   createdAt DateTime @default(now())
+
+  @@index([issueId])
 }
 
 model ActivityLog {
@@ -138,6 +151,8 @@ model ActivityLog {
   fromValue String?
   toValue   String?
   createdAt DateTime @default(now())
+
+  @@index([issueId])
 }
 
 model Notification {
@@ -148,6 +163,8 @@ model Notification {
   issueId     String?
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([recipientId])
 }
 
 model Invite {
