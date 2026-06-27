@@ -57,6 +57,20 @@ describe("listIssues", () => {
     const open = await listIssues(admin, { status: "OPEN" });
     expect(open.map((i) => i.id)).toEqual([s.i2.id]);
   });
+
+  it("returns empty when filtering by a project the user cannot access", async () => {
+    const s = await seed();
+    const dev: AuthUser = { id: s.dev.id, role: "DEVELOPER", clientId: null, projectIds: [s.p1.id] };
+    const issues = await listIssues(dev, { projectId: s.p2.id });
+    expect(issues).toEqual([]);
+  });
+
+  it("scopes a client to only their own client's issues", async () => {
+    const s = await seed();
+    const clientTwo: AuthUser = { id: "cu2", role: "CLIENT", clientId: s.c2.id, projectIds: [] };
+    const issues = await listIssues(clientTwo, {});
+    expect(issues.map((i) => i.id)).toEqual([s.i2.id]);
+  });
 });
 
 describe("getIssueForUser", () => {
@@ -70,6 +84,12 @@ describe("getIssueForUser", () => {
     const s = await seed();
     const dev: AuthUser = { id: s.dev.id, role: "DEVELOPER", clientId: null, projectIds: [s.p1.id] };
     const issue = await getIssueForUser(dev, s.i2.id);
+    expect(issue).toBeNull();
+  });
+  it("returns null for a client viewing another client's issue", async () => {
+    const s = await seed();
+    const clientOne: AuthUser = { id: "cu1", role: "CLIENT", clientId: s.c1.id, projectIds: [] };
+    const issue = await getIssueForUser(clientOne, s.i2.id);
     expect(issue).toBeNull();
   });
 });
