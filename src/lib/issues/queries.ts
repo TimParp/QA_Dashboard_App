@@ -3,6 +3,7 @@ import type { AuthUser } from "@/lib/authz/authorize";
 import {
   issueVisibilityWhere,
   projectVisibilityWhere,
+  assertAuthorized,
 } from "@/lib/authz/visibility";
 import type { IssueFilter } from "@/lib/issues/schemas";
 
@@ -80,6 +81,12 @@ export async function getUserProjects(user: AuthUser) {
 }
 
 export async function getAssignableUsers(user: AuthUser, projectId: string) {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { id: true, clientId: true },
+  });
+  assertAuthorized(user, "assignIssue", project);
+
   const members = await prisma.user.findMany({
     where: {
       role: { in: ["ADMIN", "QA", "DEVELOPER"] },

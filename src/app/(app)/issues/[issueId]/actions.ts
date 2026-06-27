@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/session";
 import { updateIssue, changeStatus, assignIssue } from "@/lib/issues/mutations";
 import { updateIssueSchema } from "@/lib/issues/schemas";
+import { optionalString } from "@/lib/forms";
 
 export async function updateIssueAction(issueId: string, formData: FormData) {
   const user = await getAuthUser();
@@ -15,18 +16,13 @@ export async function updateIssueAction(issueId: string, formData: FormData) {
     description: String(formData.get("description") ?? ""),
     type: String(formData.get("type") ?? "BUG"),
     priority: String(formData.get("priority") ?? "MEDIUM"),
-    stepsToReproduce: optional(formData.get("stepsToReproduce")),
-    expectedResult: optional(formData.get("expectedResult")),
-    actualResult: optional(formData.get("actualResult")),
-    environment: optional(formData.get("environment")),
+    stepsToReproduce: optionalString(formData.get("stepsToReproduce")),
+    expectedResult: optionalString(formData.get("expectedResult")),
+    actualResult: optionalString(formData.get("actualResult")),
+    environment: optionalString(formData.get("environment")),
   });
   await updateIssue(user, input);
   redirect(`/issues/${issueId}`);
-}
-
-function optional(v: FormDataEntryValue | null): string | undefined {
-  const s = typeof v === "string" ? v.trim() : "";
-  return s.length > 0 ? s : undefined;
 }
 
 export async function changeStatusAction(issueId: string, formData: FormData) {

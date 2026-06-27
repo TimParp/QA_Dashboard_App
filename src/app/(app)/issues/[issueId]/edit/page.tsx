@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getAuthUser } from "@/lib/auth/session";
 import { getIssueForUser } from "@/lib/issues/queries";
 import { assertAuthorized } from "@/lib/authz/visibility";
+import { ForbiddenError } from "@/lib/errors";
 import { IssueForm } from "../../../_components/IssueForm";
 import { updateIssueAction } from "../actions";
 
@@ -19,8 +20,9 @@ export default async function EditIssuePage({
 
   try {
     assertAuthorized(user, "editIssue", { id: issue.project.id, clientId: issue.project.clientId });
-  } catch {
-    notFound();
+  } catch (e) {
+    if (e instanceof ForbiddenError) notFound();
+    throw e;
   }
 
   const action = updateIssueAction.bind(null, issueId);

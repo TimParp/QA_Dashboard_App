@@ -7,6 +7,7 @@ import {
   getAssignableUsers,
 } from "@/lib/issues/queries";
 import type { AuthUser } from "@/lib/authz/authorize";
+import { ForbiddenError } from "@/lib/errors";
 
 async function seed() {
   const c1 = await testPrisma.client.create({ data: { name: "Client One" } });
@@ -109,5 +110,17 @@ describe("getAssignableUsers", () => {
     const admin: AuthUser = { id: "admin", role: "ADMIN", clientId: null, projectIds: [] };
     const users = await getAssignableUsers(admin, s.p1.id);
     expect(users.map((u) => u.id)).toContain(s.dev.id);
+  });
+
+  it("throws for a developer who cannot see the project", async () => {
+    const s = await seed();
+    const dev: AuthUser = { id: s.dev.id, role: "DEVELOPER", clientId: null, projectIds: [s.p1.id] };
+    await expect(getAssignableUsers(dev, s.p2.id)).rejects.toThrow(ForbiddenError);
+  });
+
+  it("throws for a client even on their own project", async () => {
+    const s = await seed();
+    const client: AuthUser = { id: "cu1", role: "CLIENT", clientId: s.c1.id, projectIds: [] };
+    await expect(getAssignableUsers(client, s.p1.id)).rejects.toThrow(ForbiddenError);
   });
 });
