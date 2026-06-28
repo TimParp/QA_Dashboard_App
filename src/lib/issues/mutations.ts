@@ -32,7 +32,6 @@ export async function createIssue(user: AuthUser, input: CreateIssueInput) {
     data: {
       projectId: data.projectId,
       title: data.title,
-      description: data.description ?? null,
       type: data.type,
       priority: data.priority,
       stepsToReproduce: data.stepsToReproduce ?? null,
@@ -41,7 +40,6 @@ export async function createIssue(user: AuthUser, input: CreateIssueInput) {
       environment: data.environment ?? null,
       pageOrFeature: data.pageOrFeature ?? null,
       role: data.role ?? null,
-      severity: data.severity ?? null,
       createdById: user.id,
     },
     select: { id: true },
@@ -60,7 +58,6 @@ export async function updateIssue(user: AuthUser, input: UpdateIssueInput) {
     where: { id: data.issueId },
     data: {
       title: data.title,
-      description: data.description ?? null,
       type: data.type,
       priority: data.priority,
       stepsToReproduce: data.stepsToReproduce ?? null,
@@ -69,7 +66,6 @@ export async function updateIssue(user: AuthUser, input: UpdateIssueInput) {
       environment: data.environment ?? null,
       pageOrFeature: data.pageOrFeature ?? null,
       role: data.role ?? null,
-      severity: data.severity ?? null,
     },
   });
 }

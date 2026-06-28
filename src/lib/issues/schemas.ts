@@ -9,7 +9,6 @@ export const issueStatusEnum = z.enum([
   "REOPENED",
 ]);
 export const issuePriorityEnum = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
-export const issueSeverityEnum = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 
 export const issueFilterSchema = z.object({
   projectId: z.string().optional(),
@@ -25,7 +24,6 @@ export const createIssueSchema = z
   .object({
     projectId: z.string().min(1),
     title: z.string().min(1).max(200),
-    description: z.string().optional(),
     type: issueTypeEnum,
     priority: issuePriorityEnum.default("MEDIUM"),
     stepsToReproduce: z.string().optional(),
@@ -34,7 +32,6 @@ export const createIssueSchema = z
     environment: z.string().optional(),
     pageOrFeature: z.string().optional(),
     role: z.string().optional(),
-    severity: issueSeverityEnum.optional(),
   })
   .strip();
 

@@ -25,7 +25,7 @@ describe("createIssue", () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
     const { id } = await createIssue(dev, {
-      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
+      projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM",
     });
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.title).toBe("T");
@@ -36,7 +36,7 @@ describe("createIssue", () => {
     const s = await seed();
     const client = authUser({ id: s.clientUser.id, role: "CLIENT", clientId: s.c1.id });
     const { id } = await createIssue(client, {
-      projectId: s.p1.id, title: "T2", description: "D", type: "FEATURE", priority: "LOW",
+      projectId: s.p1.id, title: "T2", type: "FEATURE", priority: "LOW",
     });
     expect(id).toBeTruthy();
   });
@@ -45,7 +45,7 @@ describe("createIssue", () => {
     const s = await seed();
     const outsider = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [] });
     await expect(
-      createIssue(outsider, { projectId: s.p1.id, title: "X", description: "D", type: "BUG", priority: "MEDIUM" }),
+      createIssue(outsider, { projectId: s.p1.id, title: "X", type: "BUG", priority: "MEDIUM" }),
     ).rejects.toBeInstanceOf(ForbiddenError);
   });
 });
@@ -54,7 +54,7 @@ describe("changeStatus / assignIssue", () => {
   it("lets a member dev change status", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM" });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
     await changeStatus(dev, id, "IN_PROGRESS");
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.status).toBe("IN_PROGRESS");
@@ -63,7 +63,7 @@ describe("changeStatus / assignIssue", () => {
   it("forbids a client from changing status", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM" });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
     const client = authUser({ id: s.clientUser.id, role: "CLIENT", clientId: s.c1.id });
     await expect(changeStatus(client, id, "RESOLVED")).rejects.toBeInstanceOf(ForbiddenError);
   });
@@ -71,7 +71,7 @@ describe("changeStatus / assignIssue", () => {
   it("assigns to a project member and rejects a non-member assignee", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM" });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
     await assignIssue(dev, id, s.dev.id);
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.assignedToId).toBe(s.dev.id);
@@ -85,8 +85,8 @@ describe("updateIssue", () => {
   it("lets a member dev update an issue", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM" });
-    await updateIssue(dev, { issueId: id, title: "Updated", description: "D2", type: "FEATURE", priority: "HIGH" });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
+    await updateIssue(dev, { issueId: id, title: "Updated", type: "FEATURE", priority: "HIGH" });
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.title).toBe("Updated");
     expect(issue?.type).toBe("FEATURE");
@@ -96,77 +96,51 @@ describe("updateIssue", () => {
   it("forbids a client from updating an issue", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM" });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
     const client = authUser({ id: s.clientUser.id, role: "CLIENT", clientId: s.c1.id });
     await expect(
-      updateIssue(client, { issueId: id, title: "X", description: "D", type: "BUG", priority: "LOW" }),
+      updateIssue(client, { issueId: id, title: "X", type: "BUG", priority: "LOW" }),
     ).rejects.toBeInstanceOf(ForbiddenError);
   });
 });
 
 describe("issue extra fields", () => {
-  it("persists pageOrFeature, role, and severity on create", async () => {
+  it("persists pageOrFeature and role on create", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
     const { id } = await createIssue(dev, {
-      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
-      pageOrFeature: "Checkout page", role: "Fleet manager", severity: "HIGH",
+      projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM",
+      pageOrFeature: "Checkout page", role: "Fleet manager",
     });
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.pageOrFeature).toBe("Checkout page");
     expect(issue?.role).toBe("Fleet manager");
-    expect(issue?.severity).toBe("HIGH");
   });
 
   it("stores null when the extra fields are omitted", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
     const { id } = await createIssue(dev, {
-      projectId: s.p1.id, title: "T", description: "D", type: "FEATURE", priority: "LOW",
+      projectId: s.p1.id, title: "T", type: "FEATURE", priority: "LOW",
     });
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.pageOrFeature).toBeNull();
     expect(issue?.role).toBeNull();
-    expect(issue?.severity).toBeNull();
   });
 
-  it("updates pageOrFeature, role, and severity", async () => {
-    const s = await seed();
-    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, {
-      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
-      pageOrFeature: "Old", role: "Old", severity: "LOW",
-    });
-    await updateIssue(dev, {
-      issueId: id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
-      pageOrFeature: "New page", role: "New role", severity: "CRITICAL",
-    });
-    const issue = await testPrisma.issue.findUnique({ where: { id } });
-    expect(issue?.pageOrFeature).toBe("New page");
-    expect(issue?.role).toBe("New role");
-    expect(issue?.severity).toBe("CRITICAL");
-  });
-});
-
-describe("optional description", () => {
-  it("creates an issue with no description and stores null", async () => {
+  it("updates pageOrFeature and role", async () => {
     const s = await seed();
     const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
     const { id } = await createIssue(dev, {
       projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM",
+      pageOrFeature: "Old", role: "Old",
+    });
+    await updateIssue(dev, {
+      issueId: id, title: "T", type: "BUG", priority: "MEDIUM",
+      pageOrFeature: "New page", role: "New role",
     });
     const issue = await testPrisma.issue.findUnique({ where: { id } });
-    expect(issue?.description).toBeNull();
-  });
-
-  it("clears the description on update when omitted", async () => {
-    const s = await seed();
-    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
-    const { id } = await createIssue(dev, {
-      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
-    });
-    await updateIssue(dev, { issueId: id, title: "T", type: "BUG", priority: "MEDIUM" });
-    const issue = await testPrisma.issue.findUnique({ where: { id } });
-    expect(issue?.description).toBeNull();
+    expect(issue?.pageOrFeature).toBe("New page");
+    expect(issue?.role).toBe("New role");
   });
 });

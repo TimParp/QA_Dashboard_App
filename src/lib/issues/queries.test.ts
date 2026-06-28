@@ -21,10 +21,10 @@ async function seed() {
     data: { userId: dev.id, projectId: p1.id },
   });
   const i1 = await testPrisma.issue.create({
-    data: { title: "Bug in P1", description: "d", type: "BUG", projectId: p1.id, createdById: dev.id },
+    data: { title: "Bug in P1", type: "BUG", projectId: p1.id, createdById: dev.id },
   });
   const i2 = await testPrisma.issue.create({
-    data: { title: "Bug in P2", description: "d", type: "BUG", projectId: p2.id, createdById: dev.id },
+    data: { title: "Bug in P2", type: "BUG", projectId: p2.id, createdById: dev.id },
   });
   return { c1, c2, p1, p2, dev, i1, i2 };
 }

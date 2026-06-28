@@ -13,7 +13,6 @@ export async function updateIssueAction(issueId: string, formData: FormData) {
   const input = updateIssueSchema.parse({
     issueId,
     title: String(formData.get("title") ?? ""),
-    description: optionalString(formData.get("description")),
     type: String(formData.get("type") ?? "BUG"),
     priority: String(formData.get("priority") ?? "MEDIUM"),
     stepsToReproduce: optionalString(formData.get("stepsToReproduce")),
@@ -22,7 +21,6 @@ export async function updateIssueAction(issueId: string, formData: FormData) {
     environment: optionalString(formData.get("environment")),
     pageOrFeature: optionalString(formData.get("pageOrFeature")),
     role: optionalString(formData.get("role")),
-    severity: optionalString(formData.get("severity")),
   });
   await updateIssue(user, input);
   redirect(`/issues/${issueId}`);

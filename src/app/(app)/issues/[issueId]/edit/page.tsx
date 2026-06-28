@@ -35,7 +35,6 @@ export default async function EditIssuePage({
         lockedProjectId={issue.project.id}
         defaultValues={{
           title: issue.title,
-          description: issue.description ?? undefined,
           type: issue.type,
           priority: issue.priority,
           stepsToReproduce: issue.stepsToReproduce ?? undefined,
@@ -44,7 +43,6 @@ export default async function EditIssuePage({
           environment: issue.environment ?? undefined,
           pageOrFeature: issue.pageOrFeature ?? undefined,
           role: issue.role ?? undefined,
-          severity: issue.severity ?? undefined,
         }}
         submitLabel="Save changes"
       />

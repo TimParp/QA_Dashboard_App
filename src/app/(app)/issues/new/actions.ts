@@ -13,7 +13,6 @@ export async function createIssueAction(formData: FormData) {
   const input = createIssueSchema.parse({
     projectId: String(formData.get("projectId") ?? ""),
     title: String(formData.get("title") ?? ""),
-    description: optionalString(formData.get("description")),
     type: String(formData.get("type") ?? "BUG"),
     priority: String(formData.get("priority") ?? "MEDIUM"),
     stepsToReproduce: optionalString(formData.get("stepsToReproduce")),
@@ -22,7 +21,6 @@ export async function createIssueAction(formData: FormData) {
     environment: optionalString(formData.get("environment")),
     pageOrFeature: optionalString(formData.get("pageOrFeature")),
     role: optionalString(formData.get("role")),
-    severity: optionalString(formData.get("severity")),
   });
 
   const { id } = await createIssue(user, input);
