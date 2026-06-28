@@ -20,6 +20,9 @@ export async function createIssueAction(formData: FormData) {
     expectedResult: optionalString(formData.get("expectedResult")),
     actualResult: optionalString(formData.get("actualResult")),
     environment: optionalString(formData.get("environment")),
+    pageOrFeature: optionalString(formData.get("pageOrFeature")),
+    role: optionalString(formData.get("role")),
+    severity: optionalString(formData.get("severity")),
   });
 
   const { id } = await createIssue(user, input);

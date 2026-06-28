@@ -20,6 +20,9 @@ export async function updateIssueAction(issueId: string, formData: FormData) {
     expectedResult: optionalString(formData.get("expectedResult")),
     actualResult: optionalString(formData.get("actualResult")),
     environment: optionalString(formData.get("environment")),
+    pageOrFeature: optionalString(formData.get("pageOrFeature")),
+    role: optionalString(formData.get("role")),
+    severity: optionalString(formData.get("severity")),
   });
   await updateIssue(user, input);
   redirect(`/issues/${issueId}`);

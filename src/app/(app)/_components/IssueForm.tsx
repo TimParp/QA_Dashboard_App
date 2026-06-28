@@ -17,6 +17,9 @@ type Props = {
     expectedResult?: string;
     actualResult?: string;
     environment?: string;
+    pageOrFeature?: string;
+    role?: string;
+    severity?: string;
   };
   submitLabel: string;
 };
@@ -70,6 +73,28 @@ export function IssueForm({ action, projects, lockedProjectId, defaultValues, su
           <option value="HIGH">High</option>
           <option value="CRITICAL">Critical</option>
         </select>
+      </label>
+
+      {type === "BUG" ? (
+        <label className="flex flex-col gap-1 text-sm">
+          Severity
+          <select name="severity" defaultValue={defaultValues?.severity ?? "MEDIUM"} className="rounded border px-3 py-2">
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </label>
+      ) : null}
+
+      <label className="flex flex-col gap-1 text-sm">
+        Page / Feature
+        <input name="pageOrFeature" defaultValue={defaultValues?.pageOrFeature} className="rounded border px-3 py-2" />
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm">
+        Role
+        <input name="role" defaultValue={defaultValues?.role} className="rounded border px-3 py-2" />
       </label>
 
       {type === "BUG" ? (

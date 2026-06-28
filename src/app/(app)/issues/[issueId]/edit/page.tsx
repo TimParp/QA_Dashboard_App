@@ -42,6 +42,9 @@ export default async function EditIssuePage({
           expectedResult: issue.expectedResult ?? undefined,
           actualResult: issue.actualResult ?? undefined,
           environment: issue.environment ?? undefined,
+          pageOrFeature: issue.pageOrFeature ?? undefined,
+          role: issue.role ?? undefined,
+          severity: issue.severity ?? undefined,
         }}
         submitLabel="Save changes"
       />

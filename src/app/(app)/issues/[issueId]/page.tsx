@@ -46,6 +46,15 @@ export default async function IssueDetailPage({
 
       <section className="whitespace-pre-wrap rounded border p-3 text-sm">{issue.description}</section>
 
+      {issue.pageOrFeature || issue.role || (issue.type === "BUG" && issue.severity) ? (
+        <section className="flex flex-col gap-2 rounded border p-3 text-sm">
+          <h2 className="font-medium">Details</h2>
+          {issue.pageOrFeature ? <p><span className="text-gray-500">Page / Feature: </span>{issue.pageOrFeature}</p> : null}
+          {issue.role ? <p><span className="text-gray-500">Role: </span>{issue.role}</p> : null}
+          {issue.type === "BUG" && issue.severity ? <p><span className="text-gray-500">Severity: </span>{issue.severity}</p> : null}
+        </section>
+      ) : null}
+
       {issue.type === "BUG" && (issue.stepsToReproduce || issue.expectedResult || issue.actualResult || issue.environment) ? (
         <section className="flex flex-col gap-2 rounded border p-3 text-sm">
           <h2 className="font-medium">Reproduction</h2>
