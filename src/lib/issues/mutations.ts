@@ -39,6 +39,9 @@ export async function createIssue(user: AuthUser, input: CreateIssueInput) {
       expectedResult: data.expectedResult ?? null,
       actualResult: data.actualResult ?? null,
       environment: data.environment ?? null,
+      pageOrFeature: data.pageOrFeature ?? null,
+      role: data.role ?? null,
+      severity: data.severity ?? null,
       createdById: user.id,
     },
     select: { id: true },
@@ -64,6 +67,9 @@ export async function updateIssue(user: AuthUser, input: UpdateIssueInput) {
       expectedResult: data.expectedResult ?? null,
       actualResult: data.actualResult ?? null,
       environment: data.environment ?? null,
+      pageOrFeature: data.pageOrFeature ?? null,
+      role: data.role ?? null,
+      severity: data.severity ?? null,
     },
   });
 }

@@ -103,3 +103,47 @@ describe("updateIssue", () => {
     ).rejects.toBeInstanceOf(ForbiddenError);
   });
 });
+
+describe("issue extra fields", () => {
+  it("persists pageOrFeature, role, and severity on create", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, {
+      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
+      pageOrFeature: "Checkout page", role: "Fleet manager", severity: "HIGH",
+    });
+    const issue = await testPrisma.issue.findUnique({ where: { id } });
+    expect(issue?.pageOrFeature).toBe("Checkout page");
+    expect(issue?.role).toBe("Fleet manager");
+    expect(issue?.severity).toBe("HIGH");
+  });
+
+  it("stores null when the extra fields are omitted", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, {
+      projectId: s.p1.id, title: "T", description: "D", type: "FEATURE", priority: "LOW",
+    });
+    const issue = await testPrisma.issue.findUnique({ where: { id } });
+    expect(issue?.pageOrFeature).toBeNull();
+    expect(issue?.role).toBeNull();
+    expect(issue?.severity).toBeNull();
+  });
+
+  it("updates pageOrFeature, role, and severity", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, {
+      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
+      pageOrFeature: "Old", role: "Old", severity: "LOW",
+    });
+    await updateIssue(dev, {
+      issueId: id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
+      pageOrFeature: "New page", role: "New role", severity: "CRITICAL",
+    });
+    const issue = await testPrisma.issue.findUnique({ where: { id } });
+    expect(issue?.pageOrFeature).toBe("New page");
+    expect(issue?.role).toBe("New role");
+    expect(issue?.severity).toBe("CRITICAL");
+  });
+});

@@ -33,6 +33,13 @@ enum IssuePriority {
   CRITICAL
 }
 
+enum IssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model Client {
   id        String    @id @default(cuid())
   name      String
@@ -101,6 +108,9 @@ model Issue {
   expectedResult    String?
   actualResult      String?
   environment       String?
+  pageOrFeature     String?
+  role              String?
+  severity          IssueSeverity?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
