@@ -13,7 +13,7 @@ export async function updateIssueAction(issueId: string, formData: FormData) {
   const input = updateIssueSchema.parse({
     issueId,
     title: String(formData.get("title") ?? ""),
-    description: String(formData.get("description") ?? ""),
+    description: optionalString(formData.get("description")),
     type: String(formData.get("type") ?? "BUG"),
     priority: String(formData.get("priority") ?? "MEDIUM"),
     stepsToReproduce: optionalString(formData.get("stepsToReproduce")),

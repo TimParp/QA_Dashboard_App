@@ -35,7 +35,7 @@ export default async function EditIssuePage({
         lockedProjectId={issue.project.id}
         defaultValues={{
           title: issue.title,
-          description: issue.description,
+          description: issue.description ?? undefined,
           type: issue.type,
           priority: issue.priority,
           stepsToReproduce: issue.stepsToReproduce ?? undefined,

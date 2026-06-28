@@ -44,7 +44,9 @@ export default async function IssueDetailPage({
         </div>
       </div>
 
-      <section className="whitespace-pre-wrap rounded border p-3 text-sm">{issue.description}</section>
+      {issue.description ? (
+        <section className="whitespace-pre-wrap rounded border p-3 text-sm">{issue.description}</section>
+      ) : null}
 
       {issue.pageOrFeature || issue.role || (issue.type === "BUG" && issue.severity) ? (
         <section className="flex flex-col gap-2 rounded border p-3 text-sm">

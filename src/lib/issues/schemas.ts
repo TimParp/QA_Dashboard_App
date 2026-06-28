@@ -25,7 +25,7 @@ export const createIssueSchema = z
   .object({
     projectId: z.string().min(1),
     title: z.string().min(1).max(200),
-    description: z.string().min(1),
+    description: z.string().optional(),
     type: issueTypeEnum,
     priority: issuePriorityEnum.default("MEDIUM"),
     stepsToReproduce: z.string().optional(),

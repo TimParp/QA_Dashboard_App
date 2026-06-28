@@ -62,7 +62,7 @@ export function IssueForm({ action, projects, lockedProjectId, defaultValues, su
 
       <label className="flex flex-col gap-1 text-sm">
         Description
-        <textarea name="description" required defaultValue={defaultValues?.description} rows={4} className="rounded border px-3 py-2" />
+        <textarea name="description" defaultValue={defaultValues?.description} rows={4} className="rounded border px-3 py-2" />
       </label>
 
       <label className="flex flex-col gap-1 text-sm">

@@ -32,7 +32,7 @@ export async function createIssue(user: AuthUser, input: CreateIssueInput) {
     data: {
       projectId: data.projectId,
       title: data.title,
-      description: data.description,
+      description: data.description ?? null,
       type: data.type,
       priority: data.priority,
       stepsToReproduce: data.stepsToReproduce ?? null,
@@ -60,7 +60,7 @@ export async function updateIssue(user: AuthUser, input: UpdateIssueInput) {
     where: { id: data.issueId },
     data: {
       title: data.title,
-      description: data.description,
+      description: data.description ?? null,
       type: data.type,
       priority: data.priority,
       stepsToReproduce: data.stepsToReproduce ?? null,

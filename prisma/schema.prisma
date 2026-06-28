@@ -94,7 +94,7 @@ model ProjectMembership {
 model Issue {
   id                String        @id @default(cuid())
   title             String
-  description       String
+  description       String?
   type              IssueType
   status            IssueStatus   @default(OPEN)
   priority          IssuePriority @default(MEDIUM)

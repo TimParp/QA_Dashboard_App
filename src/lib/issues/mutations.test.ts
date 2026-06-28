@@ -147,3 +147,26 @@ describe("issue extra fields", () => {
     expect(issue?.severity).toBe("CRITICAL");
   });
 });
+
+describe("optional description", () => {
+  it("creates an issue with no description and stores null", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, {
+      projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM",
+    });
+    const issue = await testPrisma.issue.findUnique({ where: { id } });
+    expect(issue?.description).toBeNull();
+  });
+
+  it("clears the description on update when omitted", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, {
+      projectId: s.p1.id, title: "T", description: "D", type: "BUG", priority: "MEDIUM",
+    });
+    await updateIssue(dev, { issueId: id, title: "T", type: "BUG", priority: "MEDIUM" });
+    const issue = await testPrisma.issue.findUnique({ where: { id } });
+    expect(issue?.description).toBeNull();
+  });
+});

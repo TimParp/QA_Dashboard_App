@@ -13,7 +13,7 @@ export async function createIssueAction(formData: FormData) {
   const input = createIssueSchema.parse({
     projectId: String(formData.get("projectId") ?? ""),
     title: String(formData.get("title") ?? ""),
-    description: String(formData.get("description") ?? ""),
+    description: optionalString(formData.get("description")),
     type: String(formData.get("type") ?? "BUG"),
     priority: String(formData.get("priority") ?? "MEDIUM"),
     stepsToReproduce: optionalString(formData.get("stepsToReproduce")),
