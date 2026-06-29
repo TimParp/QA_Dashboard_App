@@ -55,7 +55,12 @@ export default async function IssueDetailPage({
       {issue.type === "BUG" && (issue.stepsToReproduce || issue.expectedResult || issue.actualResult || issue.environment) ? (
         <section className="flex flex-col gap-2 rounded border p-3 text-sm">
           <h2 className="font-medium">Reproduction</h2>
-          {issue.stepsToReproduce ? <p><span className="text-gray-500">Steps: </span>{issue.stepsToReproduce}</p> : null}
+          {issue.stepsToReproduce ? (
+            <div>
+              <span className="text-gray-500">Steps: </span>
+              <p className="whitespace-pre-wrap">{issue.stepsToReproduce}</p>
+            </div>
+          ) : null}
           {issue.expectedResult ? <p><span className="text-gray-500">Expected: </span>{issue.expectedResult}</p> : null}
           {issue.actualResult ? <p><span className="text-gray-500">Actual: </span>{issue.actualResult}</p> : null}
           {issue.environment ? <p><span className="text-gray-500">Environment: </span>{issue.environment}</p> : null}
