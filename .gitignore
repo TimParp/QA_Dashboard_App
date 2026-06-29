@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/uploads
+/.test-uploads*
 
 # next.js
 /.next/
