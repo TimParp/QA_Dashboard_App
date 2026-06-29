@@ -17,7 +17,8 @@ export type Action =
   | "editIssue"
   | "changeStatus"
   | "assignIssue"
-  | "comment";
+  | "comment"
+  | "uploadAttachment";
 
 const ADMIN_ONLY: Action[] = ["manageUsers", "manageClients"];
 const STAFF_WRITE: Action[] = ["editIssue", "changeStatus", "assignIssue"];
