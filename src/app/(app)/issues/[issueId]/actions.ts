@@ -6,6 +6,8 @@ import { getAuthUser } from "@/lib/auth/session";
 import { updateIssue, changeStatus, assignIssue } from "@/lib/issues/mutations";
 import { updateIssueSchema } from "@/lib/issues/schemas";
 import { optionalString } from "@/lib/forms";
+import { addAttachments, deleteAttachment } from "@/lib/attachments/mutations";
+import { readUploadFiles } from "@/lib/attachments/form";
 
 export async function updateIssueAction(issueId: string, formData: FormData) {
   const user = await getAuthUser();
@@ -38,5 +40,20 @@ export async function assignAction(issueId: string, formData: FormData) {
   if (!user) redirect("/login");
   const raw = String(formData.get("assigneeId") ?? "");
   await assignIssue(user, issueId, raw.length > 0 ? raw : null);
+  revalidatePath(`/issues/${issueId}`);
+}
+
+export async function addAttachmentAction(issueId: string, formData: FormData) {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+  const uploads = await readUploadFiles(formData);
+  await addAttachments(user, issueId, uploads);
+  revalidatePath(`/issues/${issueId}`);
+}
+
+export async function deleteAttachmentAction(issueId: string, attachmentId: string) {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+  await deleteAttachment(user, attachmentId);
   revalidatePath(`/issues/${issueId}`);
 }

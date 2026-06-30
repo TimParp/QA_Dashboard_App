@@ -5,7 +5,9 @@ import { getIssueForUser, getAssignableUsers } from "@/lib/issues/queries";
 import { authorize } from "@/lib/authz/authorize";
 import { StatusBadge } from "../../_components/StatusBadge";
 import { PriorityBadge } from "../../_components/PriorityBadge";
-import { changeStatusAction, assignAction } from "./actions";
+import { listIssueAttachments } from "@/lib/attachments/queries";
+import { isImageMime, ATTACHMENT_ACCEPT } from "@/lib/attachments/validation";
+import { changeStatusAction, assignAction, addAttachmentAction, deleteAttachmentAction } from "./actions";
 
 const STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "REOPENED"];
 
@@ -25,6 +27,8 @@ export default async function IssueDetailPage({
   const canTriage = authorize(user, "changeStatus", projectRef);
   const canEdit = authorize(user, "editIssue", projectRef);
   const assignable = canTriage ? await getAssignableUsers(user, issue.project.id) : [];
+  const attachments = await listIssueAttachments(issue.id);
+  const isStaff = ["ADMIN", "QA", "DEVELOPER"].includes(user.role);
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
@@ -66,6 +70,42 @@ export default async function IssueDetailPage({
           {issue.environment ? <p><span className="text-gray-500">Environment: </span>{issue.environment}</p> : null}
         </section>
       ) : null}
+
+      <section className="flex flex-col gap-3 rounded border p-3 text-sm">
+        <h2 className="font-medium">Attachments</h2>
+        {attachments.length === 0 ? (
+          <p className="text-gray-500">No attachments.</p>
+        ) : (
+          <ul className="flex flex-wrap gap-3">
+            {attachments.map((a) => {
+              const href = `/api/attachments/${a.id}`;
+              const canDelete = isStaff || a.uploadedById === user.id;
+              return (
+                <li key={a.id} className="flex flex-col items-start gap-1">
+                  {isImageMime(a.contentType) ? (
+                    <a href={href} target="_blank" rel="noreferrer">
+                      <img src={href} alt={a.fileName} className="h-24 w-24 rounded border object-cover" />
+                    </a>
+                  ) : (
+                    <a href={href} target="_blank" rel="noreferrer" className="underline">
+                      {a.fileName}
+                    </a>
+                  )}
+                  {canDelete ? (
+                    <form action={deleteAttachmentAction.bind(null, issue.id, a.id)}>
+                      <button type="submit" className="text-xs text-red-600 underline">Delete</button>
+                    </form>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <form action={addAttachmentAction.bind(null, issue.id)} className="flex items-center gap-2">
+          <input type="file" name="attachments" multiple accept={ATTACHMENT_ACCEPT} className="text-xs" />
+          <button type="submit" className="rounded border px-3 py-1.5 text-sm">Upload</button>
+        </form>
+      </section>
 
       <section className="text-sm text-gray-500">
         Reported by {issue.createdBy.name ?? issue.createdBy.email}
