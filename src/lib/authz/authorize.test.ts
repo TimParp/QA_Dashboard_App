@@ -74,4 +74,11 @@ describe("authorize", () => {
     expect(canViewProject(qaWithClient, projectA)).toBe(false);
     expect(authorize(qaWithClient, "viewProject", projectA)).toBe(false);
   });
+
+  it("lets anyone who can view the project upload attachments", () => {
+    expect(authorize(clientC1, "uploadAttachment", projectA)).toBe(true);
+    expect(authorize(qa, "uploadAttachment", projectA)).toBe(true);
+    expect(authorize(dev, "uploadAttachment", projectA)).toBe(true);
+    expect(authorize(clientC1, "uploadAttachment", projectB)).toBe(false);
+  });
 });

@@ -11,3 +11,10 @@ export class NotFoundError extends Error {
     this.name = "NotFoundError";
   }
 }
+
+export class ValidationError extends Error {
+  constructor(message = "invalid input") {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
