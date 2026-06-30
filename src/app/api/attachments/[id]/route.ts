@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const headers = new Headers();
   headers.set("Content-Type", attachment.contentType);
   headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("Content-Length", String(attachment.size));
+  headers.set("Content-Length", String(bytes.length));
   headers.set("Content-Disposition", `${disposition}; filename="${encodeURIComponent(attachment.fileName)}"`);
 
   return new Response(new Uint8Array(bytes), { status: 200, headers });

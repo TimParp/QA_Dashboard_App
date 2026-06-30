@@ -9,9 +9,9 @@ export async function getAttachmentForUser(user: AuthUser, id: string) {
   });
 }
 
-export async function listIssueAttachments(issueId: string) {
+export async function listIssueAttachments(user: AuthUser, issueId: string) {
   return prisma.attachment.findMany({
-    where: { issueId },
+    where: { issueId, issue: issueVisibilityWhere(user) },
     orderBy: { createdAt: "asc" },
     select: { id: true, fileName: true, contentType: true, size: true, uploadedById: true },
   });

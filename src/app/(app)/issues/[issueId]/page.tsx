@@ -27,7 +27,7 @@ export default async function IssueDetailPage({
   const canTriage = authorize(user, "changeStatus", projectRef);
   const canEdit = authorize(user, "editIssue", projectRef);
   const assignable = canTriage ? await getAssignableUsers(user, issue.project.id) : [];
-  const attachments = await listIssueAttachments(issue.id);
+  const attachments = await listIssueAttachments(user, issue.id);
   const isStaff = ["ADMIN", "QA", "DEVELOPER"].includes(user.role);
 
   return (

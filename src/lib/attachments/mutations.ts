@@ -41,21 +41,26 @@ export async function addAttachments(user: AuthUser, issueId: string, files: Upl
     throw e;
   }
 
-  return prisma.$transaction(
-    prepared.map((p) =>
-      prisma.attachment.create({
-        data: {
-          issueId,
-          s3Key: p.s3Key,
-          fileName: p.file.name,
-          size: p.file.size,
-          contentType: p.file.type,
-          uploadedById: user.id,
-        },
-        select: { id: true },
-      }),
-    ),
-  );
+  try {
+    return await prisma.$transaction(
+      prepared.map((p) =>
+        prisma.attachment.create({
+          data: {
+            issueId,
+            s3Key: p.s3Key,
+            fileName: p.file.name,
+            size: p.file.size,
+            contentType: p.file.type,
+            uploadedById: user.id,
+          },
+          select: { id: true },
+        }),
+      ),
+    );
+  } catch (e) {
+    await Promise.allSettled(written.map((key) => storage.delete(key)));
+    throw e;
+  }
 }
 
 export async function deleteAttachment(user: AuthUser, attachmentId: string) {
