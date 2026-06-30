@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ATTACHMENT_ACCEPT } from "@/lib/attachments/validation";
 
 type ProjectOption = { id: string; name: string };
 
@@ -99,6 +100,12 @@ export function IssueForm({ action, projects, lockedProjectId, defaultValues, su
           </label>
         </fieldset>
       ) : null}
+
+      <label className="flex flex-col gap-1 text-sm">
+        Attachments
+        <input type="file" name="attachments" multiple accept={ATTACHMENT_ACCEPT} className="text-sm" />
+        <span className="text-xs text-gray-500">Images or PDF/text, up to 10 MB each, 10 per issue.</span>
+      </label>
 
       <button type="submit" className="self-start rounded bg-black px-4 py-2 text-sm text-white">
         {submitLabel}
