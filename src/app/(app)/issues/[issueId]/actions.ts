@@ -8,6 +8,7 @@ import { updateIssueSchema } from "@/lib/issues/schemas";
 import { optionalString } from "@/lib/forms";
 import { addAttachments, deleteAttachment } from "@/lib/attachments/mutations";
 import { readUploadFiles } from "@/lib/attachments/form";
+import { addComment, deleteComment } from "@/lib/comments/mutations";
 
 export async function updateIssueAction(issueId: string, formData: FormData) {
   const user = await getAuthUser();
@@ -55,5 +56,19 @@ export async function deleteAttachmentAction(issueId: string, attachmentId: stri
   const user = await getAuthUser();
   if (!user) redirect("/login");
   await deleteAttachment(user, attachmentId);
+  revalidatePath(`/issues/${issueId}`);
+}
+
+export async function addCommentAction(issueId: string, formData: FormData) {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+  await addComment(user, issueId, String(formData.get("body") ?? ""));
+  revalidatePath(`/issues/${issueId}`);
+}
+
+export async function deleteCommentAction(issueId: string, commentId: string) {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+  await deleteComment(user, commentId);
   revalidatePath(`/issues/${issueId}`);
 }

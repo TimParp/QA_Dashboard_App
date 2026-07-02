@@ -7,7 +7,10 @@ import { StatusBadge } from "../../_components/StatusBadge";
 import { PriorityBadge } from "../../_components/PriorityBadge";
 import { listIssueAttachments } from "@/lib/attachments/queries";
 import { isImageMime, ATTACHMENT_ACCEPT } from "@/lib/attachments/validation";
-import { changeStatusAction, assignAction, addAttachmentAction, deleteAttachmentAction } from "./actions";
+import { changeStatusAction, assignAction, addAttachmentAction, deleteAttachmentAction, addCommentAction } from "./actions";
+import { listIssueComments } from "@/lib/comments/queries";
+import { listIssueActivity } from "@/lib/activity/queries";
+import { IssueTimeline } from "../../_components/IssueTimeline";
 
 const STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "REOPENED"];
 
@@ -29,6 +32,8 @@ export default async function IssueDetailPage({
   const assignable = canTriage ? await getAssignableUsers(user, issue.project.id) : [];
   const attachments = await listIssueAttachments(user, issue.id);
   const isStaff = ["ADMIN", "QA", "DEVELOPER"].includes(user.role);
+  const comments = await listIssueComments(user, issue.id);
+  const activity = await listIssueActivity(user, issue.id);
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
@@ -146,6 +151,21 @@ export default async function IssueDetailPage({
           Edit issue
         </Link>
       ) : null}
+
+      <section className="flex flex-col gap-3 rounded border p-3 text-sm">
+        <h2 className="font-medium">Activity</h2>
+        <IssueTimeline
+          comments={comments}
+          activity={activity}
+          currentUserId={user.id}
+          isStaff={isStaff}
+          issueId={issue.id}
+        />
+        <form action={addCommentAction.bind(null, issue.id)} className="flex flex-col gap-2">
+          <textarea name="body" rows={3} className="rounded border px-2 py-1" placeholder="Add a comment" />
+          <button type="submit" className="self-start rounded border px-3 py-1.5 text-sm">Comment</button>
+        </form>
+      </section>
     </div>
   );
 }
