@@ -3,6 +3,7 @@ import { testPrisma, resetDb } from "@/test/db";
 import { createIssue, updateIssue, changeStatus, assignIssue } from "@/lib/issues/mutations";
 import { ForbiddenError } from "@/lib/errors";
 import type { AuthUser } from "@/lib/authz/authorize";
+import { ISSUE_CREATED, STATUS_CHANGED, ASSIGNMENT_CHANGED } from "@/lib/activity/constants";
 
 async function seed() {
   const c1 = await testPrisma.client.create({ data: { name: "C1" } });
@@ -142,5 +143,57 @@ describe("issue extra fields", () => {
     const issue = await testPrisma.issue.findUnique({ where: { id } });
     expect(issue?.pageOrFeature).toBe("New page");
     expect(issue?.role).toBe("New role");
+  });
+});
+
+describe("activity logging", () => {
+  it("records ISSUE_CREATED when an issue is created", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
+    const log = await testPrisma.activityLog.findMany({ where: { issueId: id } });
+    expect(log).toHaveLength(1);
+    expect(log[0].action).toBe(ISSUE_CREATED);
+    expect(log[0].actorId).toBe(s.dev.id);
+  });
+
+  it("records STATUS_CHANGED with from/to on a real status change", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
+    await changeStatus(dev, id, "IN_PROGRESS");
+    const log = await testPrisma.activityLog.findMany({ where: { issueId: id, action: STATUS_CHANGED } });
+    expect(log).toHaveLength(1);
+    expect(log[0].fromValue).toBe("OPEN");
+    expect(log[0].toValue).toBe("IN_PROGRESS");
+  });
+
+  it("does not record status activity when the status is unchanged", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
+    await changeStatus(dev, id, "OPEN");
+    const log = await testPrisma.activityLog.findMany({ where: { issueId: id, action: STATUS_CHANGED } });
+    expect(log).toHaveLength(0);
+  });
+
+  it("records ASSIGNMENT_CHANGED with from/to ids", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
+    await assignIssue(dev, id, s.dev.id);
+    const log = await testPrisma.activityLog.findMany({ where: { issueId: id, action: ASSIGNMENT_CHANGED } });
+    expect(log).toHaveLength(1);
+    expect(log[0].fromValue).toBeNull();
+    expect(log[0].toValue).toBe(s.dev.id);
+  });
+
+  it("does not record assignment activity when the assignee is unchanged", async () => {
+    const s = await seed();
+    const dev = authUser({ id: s.dev.id, role: "DEVELOPER", projectIds: [s.p1.id] });
+    const { id } = await createIssue(dev, { projectId: s.p1.id, title: "T", type: "BUG", priority: "MEDIUM" });
+    await assignIssue(dev, id, null);
+    const log = await testPrisma.activityLog.findMany({ where: { issueId: id, action: ASSIGNMENT_CHANGED } });
+    expect(log).toHaveLength(0);
   });
 });
